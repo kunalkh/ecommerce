@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="https://via.placeholder.com/16/007bff/007bff" type="image/x-icon">
+</head>
+<body>
+  <%- include('include/header.ejs') %>
+
+  <div class="jumbotron text-center">
+    <h1>Orders</h1>
+  </div>
+    
+  <div class="container">
+    <% if(orders.length > 0) { %>
+        <% orders.forEach(function(order, index) { %>
+        <div class="table-responsive">
+          <table class="table">
+            Order Number : <%= order.cartid %><br/>
+            Delivery Address : <%= order.address %><br/>
+            Order Placed on <%= order.date %> at <%= order.time %>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>             
+                    <% for(let i=0; i<order.items.length; i+=2){ %>
+                    <tr>
+                      <td><a class="text-body" href="/product/<%= order.pid %>"><%= order.items[i] %></a></td>
+                     <td><input type="number" style="width: 70px;" min="1" name="qnt" value="<%= order.items[i+1] %>" readonly/></td>
+                    </tr>
+                    <% } %>                    
+                  </tbody>
+                </table>                
+                Total Order Amount : <%= order.total %><br/><br/>
+                <% }); %>
+              </div>
+              <div class="clearfix"></div>
+              <% } %>
+            </form>
+        </div>
+    </body>
+</html>

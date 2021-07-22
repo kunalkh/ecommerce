@@ -22,7 +22,7 @@ const saltRounds = 10;
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
-  password : 'root',
+  password : 'Kunal2000@',
   database : 'db'
 });
 connection.connect(function(err){
@@ -122,6 +122,7 @@ app.get("/viewOrders", (req, res) => {
           result.items = result.items.split(',');
         });
         console.log(results);
+        res.render('viewOrder', {orders : results})
       }
   });
 })
@@ -188,33 +189,66 @@ app.get('/remove-from-cart/:pid', function(req, res) {
 });
 
 app.get('/checkout', function(req, res) {
-  res.render('order', {title: 'Checkout'});
+  let products = req.cookies.cart;
+  let total = 0;
+  products.forEach((product) =>{
+    total = total + (product.price * product.qnt);
+  });
+  con.query("SELECT * FROM users WHERE email = ?", [req.cookies.login], function (err, results, fields) {
+    if (err){
+        console.log(err);
+    }else{
+  res.render('order', {title:"cart", user:results[0], totalamount:total});
+    }
+    });
 });
 
 app.get('/placeOrder', function(req, res) {
   let items = []
+  let address;
+  let total = 0;
+  let datetime = new Date();
+  let date = (datetime.toISOString().slice(0,10));
+  let time = (datetime.toISOString().slice(11,19));
   let products = req.cookies.cart;
+  products.forEach((product) =>{
+    total = total + (product.price * product.qnt);
+  });
   products.forEach((item) => {
     items.push(item.name);
     items.push(item.qnt);
   });
   items = items.toString();
-  let order = {
-    "email" : req.cookies.login,
-    "items" : items
-  }
-  connection.query('INSERT INTO orders SET ?',order, function (error, results, fields) {
+  connection.query('SELECT address FROM users WHERE email = ?', [req.cookies.login], function (error, results, fields) {
     if (error) {
-        console.log(error)
-    } else {
-        res.redirect("/viewOrders");
-      }
-  });
+      console.log(error)
+  } else {
+    address = results[0].address;
+    let order = {
+      "email" : req.cookies.login,
+      "items" : items,
+      "address" : address,
+      "date" : date,
+      "time" : time,
+      "total" : total
+    }
+    connection.query('INSERT INTO orders SET ?',order, function (error, results, fields) {
+      if (error) {
+          console.log(error)
+      } else {        
+        res.clearCookie("cart");
+          res.redirect("/viewOrders");
+        }
+    });
+    }
+  })
 });
 
 app.get("/logout", (req, res) => {
   res.clearCookie("login");
-  res.clearCookie("cart");
+  if(req.cookies.cart){
+    res.clearCookie("cart");
+  }
   res.redirect("/");
  });
 
